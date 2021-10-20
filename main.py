@@ -21,7 +21,7 @@ def delay_0_y_s(random_delay_num):
 
 sess = requests.Session()
 HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36 Edg/94.0.992.50',
     "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
     "Origin": "https://www.aqistudy.cn"
 }
@@ -128,7 +128,7 @@ def get_year_months(start_year, start_month, end_year, end_month):
 if __name__ == '__main__':
 
     city_set = ['郑州', '开封', '洛阳', '平顶山', '安阳', '鹤壁', '新乡', '焦作', '濮阳', '许昌', '漯河', '三门峡', '南阳', '商丘', '周口', '驻马店', '济源']
-    year_months = get_year_months(2021, 5, 2021, 10)  # 包括最后年的最后月
+    year_months = get_year_months(2014, 1, 2021, 10)  # 包括最后年的最后月
 
     os.environ["EXECJS_RUNTIME"] = 'Node'
     if execjs.get().name != 'Node.js (V8)':
@@ -153,18 +153,23 @@ if __name__ == '__main__':
 
         dataFrame = None
         for year_month in year_months:
-            delay_0_y_s(1)
-            logger.info(f'开启请求数据：{city_chinese_name}{year_month}')
+            delay_0_y_s(2)
             # 请求数据
             while 1:
-                if rps_code == 0:
-                    data_name, enc_func_name, dec_func_name, text = getJS()
-                query = {'city': city_chinese_name, 'month': str(year_month)}  # 查询参数
-                sign, ctx = getParames(enc_func_name, text, query)
-                data, rps_code = getEncryptData(data_name, sign)
-                aqi_rsp_data = decrypt(data, dec_func_name, ctx)
-                if rps_code == 200:
-                    break
+                logger.info(f'开启请求数据：{city_chinese_name}{year_month}')
+                try:
+                    if rps_code == 0:
+                        data_name, enc_func_name, dec_func_name, text = getJS()
+                    query = {'city': city_chinese_name, 'month': str(year_month)}  # 查询参数
+                    sign, ctx = getParames(enc_func_name, text, query)
+                    data, rps_code = getEncryptData(data_name, sign)
+                    aqi_rsp_data = decrypt(data, dec_func_name, ctx)
+                except:
+                    logger.warning('except retry!!')
+                    rps_code = 0
+                else:
+                    if rps_code == 200:
+                        break
             # 处理数据
             dataFrame_tmp = pd.json_normalize(json.loads(aqi_rsp_data), record_path=['result', 'data', 'items'])
             dataFrame_tmp.set_index('time_point', inplace=True)
