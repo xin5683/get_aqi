@@ -1,0 +1,6 @@
+-i https://pypi.tuna.tsinghua.edu.cn/simple
+requests
+loguru
+PyExecJS
+pandas
+openpyxl
